@@ -46,3 +46,14 @@ Category	What you can get
 🎤 Audio devices	Count and details of output/input devices (WinMM)
 
 🌍 Environment	Get all variables or a specific one
+
+📦 Installation
+Just copy syswin.hpp into your project and include it.
+That’s it – no build steps, no extra libraries. All necessary .lib files are automatically linked via #pragma comment.
+
+```bash
+git clone https://github.com/yourname/syswin.git
+cd your_project
+cp syswin/syswin.hpp .
+```
+
