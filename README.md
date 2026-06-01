@@ -54,7 +54,7 @@ git clone https://github.com/yourname/syswin.git
 cd your_project
 cp syswin/syswin.hpp .
 ```
-Quick Start
+## Quick Start
 ```cpp
 #include <iostream>
 #include "syswin.hpp"
@@ -77,4 +77,92 @@ int main() {
     return 0;
 }
 ```
+## Detailed Examples
 
+CPU & Hardware
+```cpp
+auto cores = syswin::get_cpu_cores();
+std::cout << "Physical cores: " << cores.physical_cores
+          << ", Logical cores: " << cores.logical_cores << "\n";
+
+for (const auto& disk : syswin::get_disks_info()) {
+    std::wcout << L"Drive " << disk.drive_letter
+               << L" – " << disk.total_bytes / (1024*1024*1024) << L" GB total, "
+               << disk.free_bytes / (1024*1024*1024) << L" GB free\n";
+}
+```
+
+Processes & Memory
+```cpp
+for (const auto& proc : syswin::get_running_processes()) {
+    std::wcout << L"PID " << proc.pid
+               << L" : " << proc.name
+               << L" [" << proc.memory_mb << L" MB]\n";
+}
+
+// Kill a process (use with care)
+syswin::terminate_process(12345);
+3️⃣ Startup commands (autostart)
+cpp
+// Add current user startup
+syswin::add_startup_current_user(L"MyApp", L"C:\\tools\\myapp.exe --quiet");
+
+// Read all
+auto cmds = syswin::get_startup_commands();
+for (auto& cmd : cmds) std::wcout << cmd << L"\n";
+
+// Remove
+syswin::remove_startup_current_user(L"MyApp");
+```
+
+4️Administrator elevation
+cpp
+if (!syswin::is_admin()) {
+    if (syswin::run_as_admin()) {
+        return 0;   // new elevated process launched, exit this one
+    } else {
+        std::cerr << "User cancelled UAC prompt.\n";
+    }
+}
+// Here we are elevated
+5️⃣ Network adapters
+cpp
+std::wcout << L"IPv4: " << syswin::get_local_ipv4() << L"\n";
+std::wcout << L"MAC : " << syswin::get_mac_address() << L"\n";
+
+for (const auto& a : syswin::get_network_adapters()) {
+    std::wcout << L"Adapter: " << a.name
+               << L", Speed: " << a.speed_mbps << L" Mbps"
+               << L", MAC: " << a.mac_address << L"\n";
+}
+6️⃣ Installed software
+cpp
+auto sw = syswin::get_installed_software();
+for (const auto& prog : sw) {
+    std::wcout << prog.name << L" v" << prog.version
+               << L" by " << prog.publisher << L"\n";
+}
+7️⃣ Battery status (laptop only)
+cpp
+auto bat = syswin::get_battery_status();
+if (bat.is_battery_present) {
+    std::cout << "Battery: " << bat.percentage << "%";
+    if (bat.is_charging) std::cout << " (charging)";
+    if (bat.remaining_minutes >= 0)
+        std::cout << ", " << bat.remaining_minutes << " min left";
+    std::cout << "\n";
+}
+8️⃣ Windows services
+cpp
+auto services = syswin::get_services();
+for (const auto& svc : services) {
+    std::wcout << svc.name << L" – " << svc.status
+               << L" (start: " << svc.start_type << L")\n";
+}
+Environment variables
+cpp
+std::wstring path = syswin::get_env_var(L"PATH");
+auto all = syswin::get_all_env_vars();
+for (auto& [name, value] : all) {
+    // do something
+}
