@@ -102,8 +102,10 @@ for (const auto& proc : syswin::get_running_processes()) {
 
 // Kill a process (use with care)
 syswin::terminate_process(12345);
-3️⃣ Startup commands (autostart)
-cpp
+```
+
+Startup commands (autostart)
+```cpp
 // Add current user startup
 syswin::add_startup_current_user(L"MyApp", L"C:\\tools\\myapp.exe --quiet");
 
@@ -115,8 +117,8 @@ for (auto& cmd : cmds) std::wcout << cmd << L"\n";
 syswin::remove_startup_current_user(L"MyApp");
 ```
 
-4️Administrator elevation
-cpp
+Administrator elevation
+```cpp
 if (!syswin::is_admin()) {
     if (syswin::run_as_admin()) {
         return 0;   // new elevated process launched, exit this one
@@ -124,9 +126,10 @@ if (!syswin::is_admin()) {
         std::cerr << "User cancelled UAC prompt.\n";
     }
 }
-// Here we are elevated
-5️⃣ Network adapters
-cpp
+```
+
+Network adapters
+```cpp
 std::wcout << L"IPv4: " << syswin::get_local_ipv4() << L"\n";
 std::wcout << L"MAC : " << syswin::get_mac_address() << L"\n";
 
@@ -135,15 +138,19 @@ for (const auto& a : syswin::get_network_adapters()) {
                << L", Speed: " << a.speed_mbps << L" Mbps"
                << L", MAC: " << a.mac_address << L"\n";
 }
-6️⃣ Installed software
-cpp
+```
+
+Installed software
+```cpp
 auto sw = syswin::get_installed_software();
 for (const auto& prog : sw) {
     std::wcout << prog.name << L" v" << prog.version
                << L" by " << prog.publisher << L"\n";
 }
-7️⃣ Battery status (laptop only)
-cpp
+```
+
+Battery status (laptop only)
+```cpp
 auto bat = syswin::get_battery_status();
 if (bat.is_battery_present) {
     std::cout << "Battery: " << bat.percentage << "%";
@@ -152,7 +159,9 @@ if (bat.is_battery_present) {
         std::cout << ", " << bat.remaining_minutes << " min left";
     std::cout << "\n";
 }
-8️⃣ Windows services
+```
+
+Windows services
 cpp
 auto services = syswin::get_services();
 for (const auto& svc : services) {
