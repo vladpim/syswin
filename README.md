@@ -162,16 +162,21 @@ if (bat.is_battery_present) {
 ```
 
 Windows services
-cpp
+```cpp
 auto services = syswin::get_services();
 for (const auto& svc : services) {
     std::wcout << svc.name << L" – " << svc.status
                << L" (start: " << svc.start_type << L")\n";
 }
+```
+
 Environment variables
-cpp
+```cpp
 std::wstring path = syswin::get_env_var(L"PATH");
 auto all = syswin::get_all_env_vars();
 for (auto& [name, value] : all) {
     // do something
 }
+```
+
+
