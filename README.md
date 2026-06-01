@@ -179,7 +179,7 @@ for (auto& [name, value] : all) {
 }
 ```
 
-⚠️ Important Notes
+## ⚠️ Important Notes
 Note	Description
 CPU usage	First call returns 0 (baseline). Subsequent calls give usage since last call. Thread‑safe.
 Winsock	Network functions automatically initialise/cleanup Winsock with reference counting. No manual WSAStartup.
@@ -188,6 +188,7 @@ Process memory	Some protected processes may return 0 MB due to insufficient priv
 Strings	Most functions return std::wstring (UTF‑16). Use syswin::to_utf8() / syswin::to_wstring() to convert.
 Thread safety	All functions are thread‑safe unless noted (get_cpu_usage() uses a mutex).
 Elevation	run_as_admin() does not exit the current process – you should do that yourself after the call.
+
 🔧 Requirements & Compatibility
 OS: Windows Vista / Server 2008 or newer (uses RtlGetVersion, GetTickCount64).
 
