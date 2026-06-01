@@ -54,4 +54,27 @@ git clone https://github.com/yourname/syswin.git
 cd your_project
 cp syswin/syswin.hpp .
 ```
+Quick Start
+```cpp
+#include <iostream>
+#include "syswin.hpp"
+
+int main() {
+    // Basic hardware
+    std::cout << "CPU  : " << syswin::get_cpu_name() << "\n";
+    std::cout << "GPU  : " << syswin::get_gpu_name() << "\n";
+    std::cout << "RAM  : " << syswin::get_total_ram_gb() << " GB total\n";
+
+    // Live CPU usage (need two calls)
+    syswin::get_cpu_usage();           // first call – baseline
+    Sleep(1000);
+    unsigned cpu = syswin::get_cpu_usage();
+    std::cout << "CPU usage: " << cpu << "%\n";
+
+    // Network
+    std::wcout << L"Your IP : " << syswin::get_local_ipv4() << L"\n";
+
+    return 0;
+}
+```
 
