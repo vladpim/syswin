@@ -47,7 +47,7 @@ Category	What you can get
 
 🌍 Environment	Get all variables or a specific one
 
-📦 Installation
+## Installation
 Just copy syswin.hpp into your project and include it.
 That’s it – no build steps, no extra libraries. All necessary .lib files are automatically linked via #pragma comment.
 
