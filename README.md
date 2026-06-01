@@ -17,9 +17,7 @@
 std::string cpu = syswin::get_cpu_name();   //supposedly "Intel Core i7-9700K @ 3.60GHz"
 ```
 
-## Features at a glance
-
-Category	What you can get
+## Category	What you can get
 
 Hardware	CPU name, physical/logical cores, GPU name, total RAM, disk info (size, free space, file system)
 
