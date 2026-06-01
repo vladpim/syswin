@@ -209,7 +209,7 @@ for (auto& [name, value] : all) {
 
 ## 🔧 Requirements & Compatibility
 
-- **OS**: Windows Vista / Server 2008 or newer (uses `RtlGetVersion`, `GetTickCount64`).
+- **OS**: Windows Vista,Windows 7,Windows 10,Windows 11
 - **Compiler**: Any C++17 compiler (MSVC 2019+, Clang-cl, MinGW-w64 11+).
 - **No external dependencies** – pure Win32 API.
 
