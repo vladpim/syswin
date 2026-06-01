@@ -179,4 +179,99 @@ for (auto& [name, value] : all) {
 }
 ```
 
+⚠️ Important Notes
+Note	Description
+CPU usage	First call returns 0 (baseline). Subsequent calls give usage since last call. Thread‑safe.
+Winsock	Network functions automatically initialise/cleanup Winsock with reference counting. No manual WSAStartup.
+Registry	HKLM uninstall keys are read with both 32‑ and 64‑bit views. Startup write needs admin rights for HKLM.
+Process memory	Some protected processes may return 0 MB due to insufficient privileges.
+Strings	Most functions return std::wstring (UTF‑16). Use syswin::to_utf8() / syswin::to_wstring() to convert.
+Thread safety	All functions are thread‑safe unless noted (get_cpu_usage() uses a mutex).
+Elevation	run_as_admin() does not exit the current process – you should do that yourself after the call.
+🔧 Requirements & Compatibility
+OS: Windows Vista / Server 2008 or newer (uses RtlGetVersion, GetTickCount64).
 
+Compiler: Any C++17 compiler (MSVC 2019+, Clang-cl, MinGW-w64 11+).
+
+No external dependencies – pure Win32 API.
+
+The library automatically links:
+
+psapi.lib, advapi32.lib, iphlpapi.lib, winmm.lib, ws2_32.lib, shell32.lib
+
+📖 API Reference
+All functions are inside namespace syswin and are inline.
+
+Hardware
+std::string get_cpu_name()
+
+CpuCoreInfo get_cpu_cores()
+
+std::string get_gpu_name()
+
+unsigned long long get_total_ram_gb()
+
+std::vector<DiskInfo> get_disks_info()
+
+Telemetry
+unsigned get_cpu_usage()
+
+RamUsage get_ram_usage()
+
+unsigned long long get_current_process_memory_mb()
+
+Processes & Startup
+std::vector<Process> get_running_processes()
+
+bool terminate_process(DWORD pid)
+
+std::vector<std::wstring> get_startup_commands()
+
+bool add_startup_current_user(...), remove_..., add_startup_local_machine, remove_...
+
+OS & System
+std::wstring get_windows_version(), DWORD get_windows_build_number()
+
+unsigned long long get_system_uptime_seconds()
+
+std::wstring get_computer_name(), get_system_directory(), get_windows_directory()
+
+std::string get_os_architecture()
+
+Admin rights
+bool is_admin(), bool is_process_elevated(), bool run_as_admin(const std::wstring& parameters = L"")
+
+Installed software
+std::vector<InstalledProgram> get_installed_software()
+
+Current user
+std::wstring get_current_username(), get_current_user_domain(), get_current_user_sid()
+
+Network
+std::vector<NetworkAdapter> get_network_adapters()
+
+std::wstring get_local_ipv4(), get_local_ipv6(), get_mac_address()
+
+Battery
+BatteryStatus get_battery_status()
+
+Services
+std::vector<ServiceInfo> get_services()
+
+Audio
+unsigned int get_audio_output_devices_count(), get_audio_input_devices_count()
+
+std::vector<AudioDeviceInfo> get_audio_output_devices(), get_audio_input_devices()
+
+Environment
+std::vector<std::pair<std::wstring, std::wstring>> get_all_env_vars()
+
+std::wstring get_env_var(const std::wstring& name)
+
+##Utilities
+std::string to_utf8(const std::wstring&)
+
+std::wstring to_wstring(const std::string&)
+
+📄 License
+MIT License – see the header file for full text.
