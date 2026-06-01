@@ -1,4 +1,4 @@
-<!-- markdownlint-disable MD033 -->
+
 <p align="center">
   <img src="https://img.shields.io/badge/C%2B%2B-17-blue.svg" alt="C++17"/>
   <img src="https://img.shields.io/badge/Windows-Vista%2B-brightgreen.svg" alt="Windows"/>
