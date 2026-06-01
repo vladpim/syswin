@@ -4,57 +4,56 @@
   <img src="https://img.shields.io/badge/Windows-Vista%2B-brightgreen.svg" alt="Windows"/>
   <img src="https://img.shields.io/badge/license-MIT-green.svg" alt="MIT License"/>
   <img src="https://img.shields.io/badge/header--only-yes-orange.svg" alt="Header-only"/>
-  <img src="https://img.shields.io/badge/version-1.0 Stable-red.svg" alt="Version"/>
+  <img src="https://img.shields.io/badge/version-1.0%20Stable-red.svg" alt="Version"/>
 </p>
 
-# syswin.hpp – Windows System Information Library
+# 🪟 syswin.hpp – Windows System Information Library
 
 **Single‑header, modern C++ library to query every corner of Windows**  
 *No external dependencies, no DLLs – just `#include` and go.*
 
 ```cpp
 #include "syswin.hpp"
-std::string cpu = syswin::get_cpu_name();   //supposedly "Intel Core i7-9700K @ 3.60GHz"
+std::string cpu = syswin::get_cpu_name();   // "Intel Core i7-9700K @ 3.60GHz"
 ```
 
-## Category	What you can get
+---
 
-Hardware	CPU name, physical/logical cores, GPU name, total RAM, disk info (size, free space, file system)
+## 📋 Features at a glance
 
-Live telemetry	CPU usage (delta), RAM used/free (GB), current process memory
+| Category               | What you can get                                                                                   |
+|------------------------|----------------------------------------------------------------------------------------------------|
+| 💻 **Hardware**        | CPU name, physical/logical cores, GPU name, total RAM, disk info (size, free space, file system) |
+| 📈 **Live telemetry**  | CPU usage (delta), RAM used/free (GB), current process memory                                    |
+| ⚙️ **Processes**       | List all running processes (PID, name, path, memory), kill a process by PID                     |
+| 🚀 **Startup**         | Read/write/delete HKCU/HKLM `Run` entries with environment variable expansion                   |
+| 🧠 **OS & System**     | Windows version (real), build number, uptime, computer name, architecture, system directories   |
+| 👑 **Administrator**   | Check admin rights, check elevation level, relaunch as admin (UAC)                              |
+| 📦 **Installed SW**    | Enumerate 32/64‑bit installed applications from registry (name, version, publisher, uninstall)  |
+| 👤 **Current user**    | Username, domain, SID                                                                            |
+| 🌐 **Network**         | List adapters (name, MAC, speed, status), get local IPv4/IPv6, get MAC address                  |
+| 🔋 **Battery**         | Percentage, charging state, remaining minutes (laptops)                                         |
+| 🛠️ **Windows Services**| List all services with status (Running/Stopped) and startup type (Auto/Manual/Disabled)        |
+| 🎤 **Audio devices**   | Count and details of output/input devices (WinMM)                                               |
+| 🌍 **Environment**     | Get all variables or a specific one                                                             |
 
-Processes	List all running processes (PID, name, path, memory), kill a process by PID
+---
 
-Startup	Read/write/delete HKCU/HKLM Run entries with environment variable expansion
+## 📦 Installation
 
-OS & System	Windows version (real), build number, uptime, computer name, architecture, system directories
-
-Administrator	Check admin rights, check elevation level, relaunch as admin (UAC)
-
-Installed SW	Enumerate 32/64‑bit installed applications from registry (name, version, publisher, uninstall)
-
-Current user	Username, domain, SID
-
-Network	List adapters (name, MAC, speed, status), get local IPv4/IPv6, get MAC address
-
-Battery	Percentage, charging state, remaining minutes (laptops)
-
-Windows Services	List all services with status (Running/Stopped) and startup type (Auto/Manual/Disabled)
-
-Audio devices	Count and details of output/input devices (WinMM)
-
-Environment	Get all variables or a specific one
-
-## Installation
-Just copy syswin.hpp into your project and include it.
-That’s it – no build steps, no extra libraries. All necessary .lib files are automatically linked via #pragma comment.
+Just copy `syswin.hpp` into your project and include it.  
+That’s it – no build steps, no extra libraries. All necessary `.lib` files are automatically linked via `#pragma comment`.
 
 ```bash
 git clone https://github.com/yourname/syswin.git
 cd your_project
 cp syswin/syswin.hpp .
 ```
-## Quick Start
+
+---
+
+## 🚀 Quick Start
+
 ```cpp
 #include <iostream>
 #include "syswin.hpp"
@@ -77,9 +76,13 @@ int main() {
     return 0;
 }
 ```
-## Detailed Examples
 
-CPU & Hardware
+---
+
+## 📚 Detailed Examples
+
+### 1️⃣ CPU & Hardware
+
 ```cpp
 auto cores = syswin::get_cpu_cores();
 std::cout << "Physical cores: " << cores.physical_cores
@@ -92,7 +95,8 @@ for (const auto& disk : syswin::get_disks_info()) {
 }
 ```
 
-Processes & Memory
+### 2️⃣ Processes & Memory
+
 ```cpp
 for (const auto& proc : syswin::get_running_processes()) {
     std::wcout << L"PID " << proc.pid
@@ -104,7 +108,8 @@ for (const auto& proc : syswin::get_running_processes()) {
 syswin::terminate_process(12345);
 ```
 
-Startup commands (autostart)
+### 3️⃣ Startup commands (autostart)
+
 ```cpp
 // Add current user startup
 syswin::add_startup_current_user(L"MyApp", L"C:\\tools\\myapp.exe --quiet");
@@ -117,7 +122,8 @@ for (auto& cmd : cmds) std::wcout << cmd << L"\n";
 syswin::remove_startup_current_user(L"MyApp");
 ```
 
-Administrator elevation
+### 4️⃣ Administrator elevation
+
 ```cpp
 if (!syswin::is_admin()) {
     if (syswin::run_as_admin()) {
@@ -126,9 +132,11 @@ if (!syswin::is_admin()) {
         std::cerr << "User cancelled UAC prompt.\n";
     }
 }
+// Here we are elevated
 ```
 
-Network adapters
+### 5️⃣ Network adapters
+
 ```cpp
 std::wcout << L"IPv4: " << syswin::get_local_ipv4() << L"\n";
 std::wcout << L"MAC : " << syswin::get_mac_address() << L"\n";
@@ -140,7 +148,8 @@ for (const auto& a : syswin::get_network_adapters()) {
 }
 ```
 
-Installed software
+### 6️⃣ Installed software
+
 ```cpp
 auto sw = syswin::get_installed_software();
 for (const auto& prog : sw) {
@@ -149,7 +158,8 @@ for (const auto& prog : sw) {
 }
 ```
 
-Battery status (laptop only)
+### 7️⃣ Battery status (laptop only)
+
 ```cpp
 auto bat = syswin::get_battery_status();
 if (bat.is_battery_present) {
@@ -161,7 +171,8 @@ if (bat.is_battery_present) {
 }
 ```
 
-Windows services
+### 8️⃣ Windows services
+
 ```cpp
 auto services = syswin::get_services();
 for (const auto& svc : services) {
@@ -170,7 +181,8 @@ for (const auto& svc : services) {
 }
 ```
 
-Environment variables
+### 9️⃣ Environment variables
+
 ```cpp
 std::wstring path = syswin::get_env_var(L"PATH");
 auto all = syswin::get_all_env_vars();
@@ -179,100 +191,101 @@ for (auto& [name, value] : all) {
 }
 ```
 
+---
+
 ## ⚠️ Important Notes
-Note	Description
-CPU usage	First call returns 0 (baseline). Subsequent calls give usage since last call. Thread‑safe.
-Winsock	Network functions automatically initialise/cleanup Winsock with reference counting. No manual WSAStartup.
-Registry	HKLM uninstall keys are read with both 32‑ and 64‑bit views. Startup write needs admin rights for HKLM.
-Process memory	Some protected processes may return 0 MB due to insufficient privileges.
-Strings	Most functions return std::wstring (UTF‑16). Use syswin::to_utf8() / syswin::to_wstring() to convert.
-Thread safety	All functions are thread‑safe unless noted (get_cpu_usage() uses a mutex).
-Elevation	run_as_admin() does not exit the current process – you should do that yourself after the call.
 
-🔧 Requirements & Compatibility
-OS: Windows Vista / Server 2008 or newer (uses RtlGetVersion, GetTickCount64).
+| Note | Description |
+|------|-------------|
+| **CPU usage** | First call returns `0` (baseline). Subsequent calls give usage since last call. Thread‑safe. |
+| **Winsock** | Network functions automatically initialise/cleanup Winsock with reference counting. No manual `WSAStartup`. |
+| **Registry** | HKLM uninstall keys are read with both 32‑ and 64‑bit views. Startup write needs admin rights for HKLM. |
+| **Process memory** | Some protected processes may return `0` MB due to insufficient privileges. |
+| **Strings** | Most functions return `std::wstring` (UTF‑16). Use `syswin::to_utf8()` / `syswin::to_wstring()` to convert. |
+| **Thread safety** | All functions are thread‑safe unless noted (`get_cpu_usage()` uses a mutex). |
+| **Elevation** | `run_as_admin()` does **not** exit the current process – you should do that yourself after the call. |
 
-Compiler: Any C++17 compiler (MSVC 2019+, Clang-cl, MinGW-w64 11+).
+---
 
-No external dependencies – pure Win32 API.
+## 🔧 Requirements & Compatibility
+
+- **OS**: Windows Vista / Server 2008 or newer (uses `RtlGetVersion`, `GetTickCount64`).
+- **Compiler**: Any C++17 compiler (MSVC 2019+, Clang-cl, MinGW-w64 11+).
+- **No external dependencies** – pure Win32 API.
 
 The library automatically links:
+- `psapi.lib`
+- `advapi32.lib`
+- `iphlpapi.lib`
+- `winmm.lib`
+- `ws2_32.lib`
+- `shell32.lib`
 
-psapi.lib, advapi32.lib, iphlpapi.lib, winmm.lib, ws2_32.lib, shell32.lib
+---
 
-📖 API Reference
-All functions are inside namespace syswin and are inline.
+## 📖 API Reference
 
-Hardware
-std::string get_cpu_name()
+All functions are inside `namespace syswin` and are `inline`.
 
-CpuCoreInfo get_cpu_cores()
+### Hardware
+- `std::string get_cpu_name()`
+- `CpuCoreInfo get_cpu_cores()`
+- `std::string get_gpu_name()`
+- `unsigned long long get_total_ram_gb()`
+- `std::vector<DiskInfo> get_disks_info()`
 
-std::string get_gpu_name()
+### Telemetry
+- `unsigned get_cpu_usage()`
+- `RamUsage get_ram_usage()`
+- `unsigned long long get_current_process_memory_mb()`
 
-unsigned long long get_total_ram_gb()
+### Processes & Startup
+- `std::vector<Process> get_running_processes()`
+- `bool terminate_process(DWORD pid)`
+- `std::vector<std::wstring> get_startup_commands()`
+- `bool add_startup_current_user(...)`, `remove_...`, `add_startup_local_machine`, `remove_...`
 
-std::vector<DiskInfo> get_disks_info()
+### OS & System
+- `std::wstring get_windows_version()`, `DWORD get_windows_build_number()`
+- `unsigned long long get_system_uptime_seconds()`
+- `std::wstring get_computer_name()`, `get_system_directory()`, `get_windows_directory()`
+- `std::string get_os_architecture()`
 
-Telemetry
-unsigned get_cpu_usage()
+### Admin rights
+- `bool is_admin()`, `bool is_process_elevated()`, `bool run_as_admin(const std::wstring& parameters = L"")`
 
-RamUsage get_ram_usage()
+### Installed software
+- `std::vector<InstalledProgram> get_installed_software()`
 
-unsigned long long get_current_process_memory_mb()
+### Current user
+- `std::wstring get_current_username()`, `get_current_user_domain()`, `get_current_user_sid()`
 
-Processes & Startup
-std::vector<Process> get_running_processes()
+### Network
+- `std::vector<NetworkAdapter> get_network_adapters()`
+- `std::wstring get_local_ipv4()`, `get_local_ipv6()`, `get_mac_address()`
 
-bool terminate_process(DWORD pid)
+### Battery
+- `BatteryStatus get_battery_status()`
 
-std::vector<std::wstring> get_startup_commands()
+### Services
+- `std::vector<ServiceInfo> get_services()`
 
-bool add_startup_current_user(...), remove_..., add_startup_local_machine, remove_...
+### Audio
+- `unsigned int get_audio_output_devices_count()`, `get_audio_input_devices_count()`
+- `std::vector<AudioDeviceInfo> get_audio_output_devices()`, `get_audio_input_devices()`
 
-OS & System
-std::wstring get_windows_version(), DWORD get_windows_build_number()
+### Environment
+- `std::vector<std::pair<std::wstring, std::wstring>> get_all_env_vars()`
+- `std::wstring get_env_var(const std::wstring& name)`
 
-unsigned long long get_system_uptime_seconds()
+### Utilities
+- `std::string to_utf8(const std::wstring&)`
+- `std::wstring to_wstring(const std::string&)`
 
-std::wstring get_computer_name(), get_system_directory(), get_windows_directory()
+---
 
-std::string get_os_architecture()
+## 📄 License
 
-Admin rights
-bool is_admin(), bool is_process_elevated(), bool run_as_admin(const std::wstring& parameters = L"")
+**MIT License** – see the header file for full text.
 
-Installed software
-std::vector<InstalledProgram> get_installed_software()
-
-Current user
-std::wstring get_current_username(), get_current_user_domain(), get_current_user_sid()
-
-Network
-std::vector<NetworkAdapter> get_network_adapters()
-
-std::wstring get_local_ipv4(), get_local_ipv6(), get_mac_address()
-
-Battery
-BatteryStatus get_battery_status()
-
-Services
-std::vector<ServiceInfo> get_services()
-
-Audio
-unsigned int get_audio_output_devices_count(), get_audio_input_devices_count()
-
-std::vector<AudioDeviceInfo> get_audio_output_devices(), get_audio_input_devices()
-
-Environment
-std::vector<std::pair<std::wstring, std::wstring>> get_all_env_vars()
-
-std::wstring get_env_var(const std::wstring& name)
-
-##Utilities
-std::string to_utf8(const std::wstring&)
-
-std::wstring to_wstring(const std::string&)
-
-📄 License
-MIT License – see the header file for full text.
+---
