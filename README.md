@@ -4,7 +4,7 @@
   <img src="https://img.shields.io/badge/Windows-Vista%2B-brightgreen.svg" alt="Windows"/>
   <img src="https://img.shields.io/badge/license-MIT-green.svg" alt="MIT License"/>
   <img src="https://img.shields.io/badge/header--only-yes-orange.svg" alt="Header-only"/>
-  <img src="https://img.shields.io/badge/version-1.0%20Stable-red.svg" alt="Version"/>
+  <img src="https://img.shields.io/badge/version-1.1%20Stable-red.svg" alt="Version"/>
 </p>
 
 # 🪟 syswin.hpp – Windows System Information Library
@@ -35,9 +35,23 @@ std::string cpu = syswin::get_cpu_name();   // "Intel Core i7-9700K @ 3.60GHz"
 | 🔋 **Battery**         | Percentage, charging state, remaining minutes (laptops)                                         |
 | 🛠️ **Windows Services**| List all services with status (Running/Stopped) and startup type (Auto/Manual/Disabled)        |
 | 🎤 **Audio devices**   | Count and details of output/input devices (WinMM)                                               |
-| 🌍 **Environment**     | Get all variables or a specific one                                                             |
+| 🔌 Power management	Shutdown, restart, sleep, hibernate (new in v1.1)                                                  |
 
 ---
+
+## 🆕 What's New in v1.1
+
+Power management – added shutdown_system(), restart_system(), sleep_system(), hibernate_system().
+
+Fixed get_startup_commands() – now dynamically allocates buffer for registry values, avoiding truncation of long commands.
+
+Fixed get_running_processes() – explicitly initializes memory_mb to 0, eliminating garbage values for system processes.
+
+Improved RAII consistency – replaced manual CloseHandle with UniqueHandle in process enumeration.
+
+Added missing header <powrprof.h> and library powrprof.lib for power functions.
+
+Enhanced documentation – added detailed comments and usage notes throughout the code.
 
 ## 📦 Installation
 
@@ -204,6 +218,7 @@ for (auto& [name, value] : all) {
 | **Strings** | Most functions return `std::wstring` (UTF‑16). Use `syswin::to_utf8()` / `syswin::to_wstring()` to convert. |
 | **Thread safety** | All functions are thread‑safe unless noted (`get_cpu_usage()` uses a mutex). |
 | **Elevation** | `run_as_admin()` does **not** exit the current process – you should do that yourself after the call. |
+| **Power functions**|	Require SE_SHUTDOWN_NAME privilege, typically held by administrators. |
 
 ---
 
@@ -220,6 +235,7 @@ The library automatically links:
 - `winmm.lib`
 - `ws2_32.lib`
 - `shell32.lib`
+- `powrprof.lib` (new in v1.1)
 
 ---
 
@@ -277,6 +293,13 @@ All functions are inside `namespace syswin` and are `inline`.
 ### Environment
 - `std::vector<std::pair<std::wstring, std::wstring>> get_all_env_vars()`
 - `std::wstring get_env_var(const std::wstring& name)`
+
+### Power management (new)
+
+- `bool shutdown_system(bool force)`
+- `bool restart_system(bool force)`
+- `bool sleep_system()`
+- `bool hibernate_system()`
 
 ### Utilities
 - `std::string to_utf8(const std::wstring&)`
