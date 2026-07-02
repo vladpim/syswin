@@ -1,5 +1,5 @@
 // syswin.hpp
-// Version: 1.0 Stable
+// Version: 1.1 Stable
 // Repository: [https://github.com/VladPim/syswin]
 // License: MIT
 //
@@ -14,6 +14,7 @@
 //   - Battery status, audio devices, environment variables
 //   - Windows version, uptime, administrator rights
 //   - Installed software from registry
+//   - Power management (shutdown, restart, sleep, hibernate)
 //   - And much more.
 //
 // All functions are thread-safe where necessary, and all handles are
@@ -46,6 +47,7 @@
 #include <winternl.h>
 #include <mmsystem.h>
 #include <shellapi.h>
+#include <powrprof.h>    // for SetSuspendState
 
 #include <vector>
 #include <string>
@@ -65,6 +67,7 @@
 #pragma comment(lib, "winmm.lib")
 #pragma comment(lib, "ws2_32.lib")
 #pragma comment(lib, "shell32.lib")
+#pragma comment(lib, "powrprof.lib")
 
 namespace syswin {
 
@@ -359,6 +362,8 @@ namespace syswin {
      * @return CpuCoreInfo structure with the core counts. On error, both fields are 0.
      *
      * This function uses GetLogicalProcessorInformation and handles dynamic buffer resizing.
+     * Note: On systems with >64 logical cores, the bitset approach may undercount.
+     *       For a more accurate count on large systems, consider using GetLogicalProcessorInformationEx.
      */
     [[nodiscard]] inline CpuCoreInfo get_cpu_cores() noexcept {
         CpuCoreInfo info;
@@ -573,7 +578,8 @@ namespace syswin {
      * @return std::vector<Process> containing information for each process.
      *
      * @note Path retrieval uses PROCESS_QUERY_LIMITED_INFORMATION; memory usage requires
-     *       additional privileges and may fail for some processes.
+     *       additional privileges and may fail for some processes (e.g., system processes).
+     *       In such cases memory_mb remains 0.
      */
     [[nodiscard]] inline std::vector<Process> get_running_processes() {
         std::vector<Process> result;
@@ -586,9 +592,10 @@ namespace syswin {
             return result;
 
         do {
-            Process proc;
+            Process proc{};
             proc.pid = pe.th32ProcessID;
             proc.name = pe.szExeFile;
+            proc.memory_mb = 0; // Explicit initialization to avoid garbage
 
             auto hProc = make_unique_handle(OpenProcess, PROCESS_QUERY_LIMITED_INFORMATION, FALSE, proc.pid);
             if (hProc) {
@@ -597,13 +604,13 @@ namespace syswin {
                 if (QueryFullProcessImageNameW(hProc.get(), 0, path, &size))
                     proc.path = path;
 
-                // Memory info requires higher privileges
-                HANDLE hMem = OpenProcess(PROCESS_QUERY_INFORMATION | PROCESS_VM_READ, FALSE, proc.pid);
+                // Memory info requires higher privileges – we open with additional rights
+                auto hMem = make_unique_handle(OpenProcess, PROCESS_QUERY_INFORMATION | PROCESS_VM_READ, FALSE, proc.pid);
                 if (hMem) {
                     PROCESS_MEMORY_COUNTERS pmc = {};
-                    if (GetProcessMemoryInfo(hMem, &pmc, sizeof(pmc)))
+                    if (GetProcessMemoryInfo(hMem.get(), &pmc, sizeof(pmc))) {
                         proc.memory_mb = pmc.WorkingSetSize / (1024ULL * 1024);
-                    CloseHandle(hMem);
+                    }
                 }
             }
             result.push_back(std::move(proc));
@@ -630,6 +637,7 @@ namespace syswin {
      * @brief Retrieves the list of commands that run at system startup.
      *
      * Reads from both HKCU and HKLM Run registry keys. REG_EXPAND_SZ values are expanded.
+     * This implementation dynamically allocates memory for each value, avoiding truncation.
      *
      * @return std::vector<std::wstring> containing each command line.
      */
@@ -647,16 +655,24 @@ namespace syswin {
                 continue;
             DWORD index = 0;
             wchar_t valueName[256];
-            BYTE data[1024];
             DWORD nameSize, dataSize, type;
             while (true) {
                 nameSize = 256;
-                dataSize = sizeof(data);
+                dataSize = 0;
+                // First, query the size of the value
                 LONG res = RegEnumValueW(hKey, index, valueName, &nameSize,
-                    nullptr, &type, data, &dataSize);
+                    nullptr, &type, nullptr, &dataSize);
                 if (res == ERROR_NO_MORE_ITEMS) break;
-                if (res == ERROR_SUCCESS && (type == REG_SZ || type == REG_EXPAND_SZ)) {
-                    std::wstring command((wchar_t*)data, dataSize / sizeof(wchar_t));
+                if (res != ERROR_SUCCESS || (type != REG_SZ && type != REG_EXPAND_SZ)) {
+                    ++index;
+                    continue;
+                }
+                std::vector<BYTE> data(dataSize + sizeof(wchar_t)); // extra for null terminator
+                DWORD actualSize = dataSize;
+                res = RegEnumValueW(hKey, index, valueName, &nameSize,
+                    nullptr, &type, data.data(), &actualSize);
+                if (res == ERROR_SUCCESS) {
+                    std::wstring command(reinterpret_cast<wchar_t*>(data.data()), actualSize / sizeof(wchar_t));
                     while (!command.empty() && command.back() == L'\0') command.pop_back();
                     if (type == REG_EXPAND_SZ) command = expand_env_string(command);
                     commands.push_back(command);
@@ -805,6 +821,7 @@ namespace syswin {
         if (RtlGetVersion(&ver) != 0) return L"Unknown";
 
         wchar_t buffer[128];
+        // Windows 11 has build number >= 22000 on version 10.0
         if (ver.dwMajorVersion == 10 && ver.dwBuildNumber >= 22000)
             _snwprintf_s(buffer, _TRUNCATE, L"Windows 11 %lu.%lu (Build %lu)", ver.dwMajorVersion, ver.dwMinorVersion, ver.dwBuildNumber);
         else
@@ -932,8 +949,8 @@ namespace syswin {
      * @brief Enumerates installed software from the registry (both 32-bit and 64-bit views).
      *
      * Reads from:
-     *   - HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall
-     *   - HKLM\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall
+     *   - HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall (64-bit)
+     *   - HKLM\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall (32-bit)
      *
      * @return std::vector<InstalledProgram> containing all found applications with DisplayName.
      */
@@ -1501,6 +1518,56 @@ namespace syswin {
         bool result = (TerminateProcess(hProcess, 1) != 0);
         CloseHandle(hProcess);
         return result;
+    }
+
+    // =========================================================================
+    // 14. Power management (shutdown, restart, sleep, hibernate)
+    // =========================================================================
+
+    /**
+     * @brief Shuts down the system.
+     * @param force If true, forces immediate shutdown without notifying applications.
+     * @return true on success.
+     *
+     * @note Requires SE_SHUTDOWN_NAME privilege. Normally the calling process
+     *       must have this privilege; it is often granted to administrators.
+     */
+    [[nodiscard]] inline bool shutdown_system(bool force) noexcept {
+        return ExitWindowsEx(EWX_SHUTDOWN | (force ? EWX_FORCE : 0),
+                             SHTDN_REASON_MAJOR_OTHER | SHTDN_REASON_FLAG_PLANNED) != 0;
+    }
+
+    /**
+     * @brief Restarts the system.
+     * @param force If true, forces immediate restart.
+     * @return true on success.
+     *
+     * @note Requires SE_SHUTDOWN_NAME privilege.
+     */
+    [[nodiscard]] inline bool restart_system(bool force) noexcept {
+        return ExitWindowsEx(EWX_REBOOT | (force ? EWX_FORCE : 0),
+                             SHTDN_REASON_MAJOR_OTHER | SHTDN_REASON_FLAG_PLANNED) != 0;
+    }
+
+    /**
+     * @brief Hibernates the system.
+     * @return true on success.
+     *
+     * @note Requires SE_SHUTDOWN_NAME privilege. Hibernation must be enabled
+     *       in the system power settings.
+     */
+    [[nodiscard]] inline bool hibernate_system() noexcept {
+        return SetSuspendState(TRUE, FALSE, FALSE) != 0;
+    }
+
+    /**
+     * @brief Suspends (sleep) the system.
+     * @return true on success.
+     *
+     * @note Requires SE_SHUTDOWN_NAME privilege.
+     */
+    [[nodiscard]] inline bool sleep_system() noexcept {
+        return SetSuspendState(FALSE, FALSE, FALSE) != 0;
     }
 
 } // namespace syswin
