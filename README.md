@@ -18,22 +18,41 @@ std::string cpu = syswin::get_cpu_name();   // "..."
 ```
 
 📋 Features at a glance
+
 Category	What you can get
+
 💻 Hardware	CPU name, physical/logical cores, GPU name, total RAM, disk info (size, free space, file system)
+
 📈 Live telemetry	CPU usage (delta), RAM used/free (GB), current process memory
+
 ⚙️ Processes	List all running processes (PID, name, path, memory), kill a process by PID
+
 🚀 Startup	Read/write/delete HKCU/HKLM Run entries with environment variable expansion
+
 🧠 OS & System	Windows version (real), build number, uptime, computer name, architecture, system directories
+
 👑 Administrator	Check admin rights, check elevation level, relaunch as admin (UAC)
+
 📦 Installed SW	Enumerate 32/64‑bit installed applications from registry (name, version, publisher, uninstall)
+
 👤 Current user	Username, domain, SID
+
 🌐 Network	List adapters (name, MAC, speed, status), get local IPv4/IPv6, get MAC address
+
 🔋 Battery	Percentage, charging state, remaining minutes (laptops)
+
 🛠️ Windows Services	List all services with status (Running/Stopped) and startup type (Auto/Manual/Disabled)
+
 🎤 Audio devices	Count and details of output/input devices (WinMM)
+
 🌍 Environment	Get all variables or a specific one
+
 🔌 Power management	Shutdown, restart, sleep, hibernate (new in v1.1)
+
+
+
 🆕 What's New in v1.1
+
 Power management – added shutdown_system(), restart_system(), sleep_system(), hibernate_system().
 
 Fixed get_startup_commands() – now dynamically allocates buffer for registry values, avoiding truncation of long commands.
@@ -46,7 +65,9 @@ Added missing header <powrprof.h> and library powrprof.lib for power functions.
 
 Enhanced documentation – added detailed comments and usage notes throughout the code.
 
+
 📦 Installation
+
 Just copy syswin.hpp into your project and include it.
 That’s it – no build steps, no extra libraries. All necessary .lib files are automatically linked via #pragma comment.
 
