@@ -15,6 +15,7 @@
 ```cpp
 #include "syswin.hpp"
 std::string cpu = syswin::get_cpu_name();   // "..."
+```
 
 📋 Features at a glance
 Category	What you can get
