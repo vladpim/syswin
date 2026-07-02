@@ -15,6 +15,7 @@
 ```cpp
 #include "syswin.hpp"
 std::string cpu = syswin::get_cpu_name();   // "..."
+
 📋 Features at a glance
 Category	What you can get
 💻 Hardware	CPU name, physical/logical cores, GPU name, total RAM, disk info (size, free space, file system)
